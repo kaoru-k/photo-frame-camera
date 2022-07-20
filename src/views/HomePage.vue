@@ -30,7 +30,7 @@
         <ion-input v-model="logoUrl" @ionChange="loadLogoImage"></ion-input>
       </ion-item>
 
-      <canvas ref="canvas"></canvas>
+      <canvas ref="canvas" style="width: 100%"></canvas>
 
       <ion-fab vertical="bottom" horizontal="center" slot="fixed">
         <ion-fab-button color="light" @click="shot">
