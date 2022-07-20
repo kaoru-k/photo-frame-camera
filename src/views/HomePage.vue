@@ -31,7 +31,11 @@
       </ion-item>
       <ion-item>
         <ion-label>Image URL</ion-label>
-        <ion-input v-model.number="charaUrl" @ionChange="loadCharaImage"></ion-input>
+        <ion-input v-model="charaUrl" @ionChange="loadCharaImage"></ion-input>
+      </ion-item>
+      <ion-item>
+        <ion-label>Logo URL</ion-label>
+        <ion-input v-model="logoUrl" @ionChange="loadLogoImage"></ion-input>
       </ion-item>
 
       <canvas ref="canvas"></canvas>
@@ -93,6 +97,8 @@ export default defineComponent({
       chara: {} as HTMLImageElement,
       charaPos: { x: 0, y: 0 },
       charaUrl: 'https://4.bp.blogspot.com/-cD6qC3KnvzI/W6DTCD_LsII/AAAAAAABO4s/ObVOfI-_cTQPp7cyfPFiGdxr4cBU7jfjgCLcBGAs/s400/animal_stand_neko_white.png',
+      logo: {} as HTMLImageElement,
+      logoUrl: '',
       stream: {} as MediaStream,
       video: {} as HTMLVideoElement,
       canvas: {} as HTMLCanvasElement,
@@ -123,7 +129,8 @@ export default defineComponent({
     this.canvas = this.$refs.canvas as HTMLCanvasElement;
     this.offscreen = document.createElement("canvas");
 
-    await this.loadCharaImage();
+    this.loadCharaImage();
+    this.loadLogoImage();
 
     this.video.onloadedmetadata = () => {
       this.video.play();
@@ -147,7 +154,7 @@ export default defineComponent({
         // @ts-expect-error this.video.srcObject as MediaSource
         this.video.srcObject.getTracks().forEach(track => track.stop());
       }
-      
+
       const constraints = {
         video: this.selectedVideoDevice < this.videoDevices.length
           ? { deviceId: { exact: this.videoDevices[this.selectedVideoDevice].deviceId } }
@@ -167,6 +174,11 @@ export default defineComponent({
       this.chara.crossOrigin = "Anonymous";
       this.chara.src = this.charaUrl;
     },
+    loadLogoImage() {
+      this.logo = new Image();
+      this.logo.crossOrigin = "Anonymous";
+      this.logo.src = this.logoUrl;
+    },
     async tick() {
       const offscreenCtx = this.canvas.getContext("2d") as CanvasRenderingContext2D;
       // カメラの映像をCanvasに描画する
@@ -174,6 +186,7 @@ export default defineComponent({
       
       // 画像を重ねる
       offscreenCtx.drawImage(this.chara, this.charaPos.x, this.charaPos.y);
+      offscreenCtx.drawImage(this.logo, this.offscreen.width - this.logo.width * 0.8, this.offscreen.height - this.logo.height * 0.8, this.logo.width * 0.8, this.logo.height * 0.8);
 
       // イメージデータを取得する（[r,g,b,a,r,g,b,a,...]のように1次元配列で取得できる）
       const imageData = offscreenCtx.getImageData(0, 0, this.offscreen.width, this.offscreen.height);
