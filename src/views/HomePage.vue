@@ -100,20 +100,20 @@ export default defineComponent({
       selectedVideoDevice: -1,
     };
   },
-  mounted: async function () {
+  async mounted() {
     //デバイスへのアクセス
-    const deviceInfos = await navigator.mediaDevices.enumerateDevices();
-
-    //カメラの情報を取得
-    deviceInfos
-      .filter((deviceInfo) => deviceInfo.kind === "videoinput")
-      .map((video) =>
-        this.videoDevices.push({
-          index: this.videoDevices.length,
-          text: video.label || `Video Input (${video.deviceId})`,
-          deviceId: video.deviceId,
-        })
-      );
+    await navigator.mediaDevices.enumerateDevices().then((deviceInfos) => {
+      //カメラの情報を取得
+      deviceInfos
+        .filter((deviceInfo) => deviceInfo.kind === "videoinput")
+        .map((deviceInfo) =>
+          this.videoDevices.push({
+            index: this.videoDevices.length,
+            text: deviceInfo.label || `Video Input (${deviceInfo.deviceId})`,
+            deviceId: deviceInfo.deviceId,
+          })
+        );
+    });
 
     this.video = document.createElement("video");
     this.canvas = this.$refs.canvas as HTMLCanvasElement;
@@ -138,16 +138,16 @@ export default defineComponent({
   },
 
   methods: {
-    onChange: function () {
+    onChange() {
       if ( this.selectedVideoDevice < this.videoDevices.length ) this.connectLocalCamera();
     },
-    changeVideoDevice: function () {
+    changeVideoDevice() {
       if ( this.videoDevices.length > 1 ) {
         this.selectedVideoDevice = (this.selectedVideoDevice + 1) % this.videoDevices.length;
       }
       if ( this.selectedVideoDevice < this.videoDevices.length ) this.connectLocalCamera();
     },
-    connectLocalCamera: async function () {
+    async connectLocalCamera() {
       const constraints = {
         video: this.selectedVideoDevice < this.videoDevices.length
           ? { deviceId: { exact: this.videoDevices[this.selectedVideoDevice].deviceId } }
@@ -156,12 +156,12 @@ export default defineComponent({
 
       this.video.srcObject = await navigator.mediaDevices.getUserMedia(constraints);
     },
-    loadCharaImage: function () {
+    loadCharaImage() {
       this.chara = new Image();
       this.chara.crossOrigin = "Anonymous";
       this.chara.src = this.charaUrl;
     },
-    tick: async function () {
+    async tick() {
       const offscreenCtx = this.canvas.getContext("2d") as CanvasRenderingContext2D;
       // カメラの映像をCanvasに描画する
       offscreenCtx.drawImage(this.video, 0, 0);
@@ -182,7 +182,7 @@ export default defineComponent({
       // 次フレームを処理する
       window.requestAnimationFrame(this.tick);
     },
-    shot: async function () {
+    async shot() {
       const dt = new Date();
       
       if ( isPlatform('capacitor') ) {
