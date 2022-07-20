@@ -56,9 +56,11 @@
 </template>
 
 <script lang="ts">
-import { IonContent, IonHeader, IonPage, IonTitle, IonToolbar, IonSelect, IonSelectOption, IonIcon, IonFab, IonFabButton, IonItem, IonLabel, IonInput } from "@ionic/vue";
+import { IonContent, IonHeader, IonPage, IonTitle, IonToolbar, IonSelect, IonSelectOption, IonIcon, IonFab, IonFabButton, IonItem, IonLabel, IonInput, isPlatform } from "@ionic/vue";
 import { cameraOutline, cameraReverseOutline, settingsSharp } from 'ionicons/icons';
 import { defineComponent } from "vue";
+import { Mediastore } from "@agorapulse/capacitor-mediastore";
+import { Directory, Filesystem } from "@capacitor/filesystem"
 
 type VideoDevice = { index: number; text: string; deviceId: string };
 
@@ -181,14 +183,32 @@ export default defineComponent({
       window.requestAnimationFrame(this.tick);
     },
     shot: async function () {
-      //アンカータグを作成
-      var a = document.createElement('a');
-      //canvasをJPEG変換し、そのBase64文字列をhrefへセット
-      a.href = this.canvas.toDataURL('image/jpeg', 0.85);
-      //ダウンロード時のファイル名を指定
-      a.download = 'download.jpg';
-      //クリックイベントを発生させる
-      a.click();
+      const dt = new Date();
+      
+      if ( isPlatform('capacitor') ) {
+        const filename = `${dt.getTime()}.jpg`; 
+        const tempImage = await Filesystem.writeFile({
+          path: filename,
+          data: this.canvas.toDataURL('image/jpeg', 0.85),
+          directory: Directory.Cache
+        });
+
+        Mediastore.savePicture({
+          album: 'PhotoFrameCamera',
+          filename: filename,
+          path: tempImage.uri,
+        });
+      }
+      else {
+        //アンカータグを作成
+        var a = document.createElement('a');
+        //canvasをJPEG変換し、そのBase64文字列をhrefへセット
+        a.href = this.canvas.toDataURL('image/jpeg', 0.85);
+        //ダウンロード時のファイル名を指定
+        a.download = `${dt.getTime()}.jpg`;
+        //クリックイベントを発生させる
+        a.click();
+      }
     },
   },
 });
