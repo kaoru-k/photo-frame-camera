@@ -2,8 +2,8 @@
 include ':capacitor-android'
 project(':capacitor-android').projectDir = new File('../node_modules/@capacitor/android/capacitor')
 
-include ':capacitor-community-media'
-project(':capacitor-community-media').projectDir = new File('../node_modules/@capacitor-community/media/android')
+include ':agorapulse-capacitor-mediastore'
+project(':agorapulse-capacitor-mediastore').projectDir = new File('../node_modules/@agorapulse/capacitor-mediastore/android')
 
 include ':capacitor-app'
 project(':capacitor-app').projectDir = new File('../node_modules/@capacitor/app/android')
