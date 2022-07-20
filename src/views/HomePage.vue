@@ -22,14 +22,6 @@
         </ion-select>
       </ion-item>
       <ion-item>
-        <ion-label>x:</ion-label>
-        <ion-input v-model.number="charaPos.x"></ion-input>
-      </ion-item>
-      <ion-item>
-        <ion-label>y:</ion-label>
-        <ion-input v-model.number="charaPos.y"></ion-input>
-      </ion-item>
-      <ion-item>
         <ion-label>Image URL</ion-label>
         <ion-input v-model="charaUrl" @ionChange="loadCharaImage"></ion-input>
       </ion-item>
@@ -97,6 +89,7 @@ export default defineComponent({
       chara: {} as HTMLImageElement,
       charaPos: { x: 0, y: 0 },
       charaUrl: 'https://4.bp.blogspot.com/-cD6qC3KnvzI/W6DTCD_LsII/AAAAAAABO4s/ObVOfI-_cTQPp7cyfPFiGdxr4cBU7jfjgCLcBGAs/s400/animal_stand_neko_white.png',
+      prevMousePos: { x: 0, y: 0 },
       logo: {} as HTMLImageElement,
       logoUrl: '',
       stream: {} as MediaStream,
@@ -127,6 +120,17 @@ export default defineComponent({
 
     this.video = document.createElement("video");
     this.canvas = this.$refs.canvas as HTMLCanvasElement;
+    // ドラッグの部分
+    this.canvas.addEventListener('mousedown', (e) => {
+      this.prevMousePos.x = e.clientX;
+      this.prevMousePos.y = e.clientY;
+      this.canvas.addEventListener('mousemove', this.move);
+    });
+
+    // ドロップの部分
+    this.canvas.addEventListener('mouseup',()=> {
+      this.canvas.removeEventListener('mousemove', this.move);
+    });
     this.offscreen = document.createElement("canvas");
 
     this.loadCharaImage();
@@ -229,6 +233,11 @@ export default defineComponent({
         a.click();
       }
     },
+    move(e: MouseEvent) {
+      this.charaPos.x += e.clientX - this.prevMousePos.x;
+      this.charaPos.y += e.clientY - this.prevMousePos.y;
+      this.prevMousePos = { x: e.clientX, y: e.clientY };
+    }
   },
 });
 </script>
