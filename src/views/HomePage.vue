@@ -118,19 +118,26 @@ export default defineComponent({
         );
     });
 
-    this.video = document.createElement("video");
     this.canvas = this.$refs.canvas as HTMLCanvasElement;
     // ドラッグの部分
     this.canvas.addEventListener('mousedown', (e) => {
-      this.prevMousePos.x = e.clientX;
-      this.prevMousePos.y = e.clientY;
-      this.canvas.addEventListener('mousemove', this.move);
+      this.prevMousePos = { x: e.clientX, y: e.clientY };
+      this.canvas.addEventListener('mousemove', this.mouseMove);
+    });
+    this.canvas.addEventListener('touchstart', (e) => {
+      this.prevMousePos = { x: e.changedTouches[0].clientX, y: e.changedTouches[0].clientY };
+      this.canvas.addEventListener('touchmove', this.touchMove);
     });
 
     // ドロップの部分
     this.canvas.addEventListener('mouseup',()=> {
-      this.canvas.removeEventListener('mousemove', this.move);
+      this.canvas.removeEventListener('mousemove', this.mouseMove);
     });
+    this.canvas.addEventListener('touchend',()=> {
+      this.canvas.removeEventListener('touchmove', this.touchMove);
+    });
+
+    this.video = document.createElement("video");
     this.offscreen = document.createElement("canvas");
 
     this.loadCharaImage();
@@ -233,32 +240,21 @@ export default defineComponent({
         a.click();
       }
     },
-    move(e: MouseEvent) {
+    mouseMove(e: MouseEvent) {
       this.charaPos.x += e.clientX - this.prevMousePos.x;
       this.charaPos.y += e.clientY - this.prevMousePos.y;
       this.prevMousePos = { x: e.clientX, y: e.clientY };
+    },
+    touchMove(e: TouchEvent) {
+      this.charaPos.x += e.changedTouches[0].clientX - this.prevMousePos.x;
+      this.charaPos.y += e.changedTouches[0].clientY - this.prevMousePos.y;
+      this.prevMousePos = { x: e.changedTouches[0].clientX, y: e.changedTouches[0].clientY };
     }
   },
 });
 </script>
 
 <style lang="scss" scoped>
-  .video_wrapper {
-    position: relative;
-    width: 100vw;
-    height: 100vh;
-    overflow: hidden;
-
-    video {
-      position: absolute;
-      top: 50%;
-      left: 50%;
-      transform: translateX(-50%) translateY(-50%);
-      min-width: 100%;
-      min-height: 100%;
-    }
-  }
-
   ion-fab.settings {
     ion-fab-button {
       display: inline-block;
