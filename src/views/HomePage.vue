@@ -102,6 +102,9 @@ export default defineComponent({
     };
   },
   async mounted() {
+    // カメラの権限を取得
+    await navigator.mediaDevices.getUserMedia({video: true});
+
     //デバイスへのアクセス
     await navigator.mediaDevices.enumerateDevices().then((deviceInfos) => {
       //カメラの情報を取得
@@ -133,7 +136,7 @@ export default defineComponent({
     };
 
     if (this.videoDevices.length > 0) {
-      this.selectedVideoDevice = 0;
+      this.selectedVideoDevice = this.videoDevices.length - 1;
       this.changeVideoDevice();
     }
   },
