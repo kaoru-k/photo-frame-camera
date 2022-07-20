@@ -15,7 +15,7 @@
 
       <ion-item>
         <ion-label>Device :</ion-label>
-        <ion-select placeholder="Select Camera" v-model="selectedVideoDevice" @ionChange="onChange">
+        <ion-select placeholder="Select Camera" v-model="selectedVideoDevice" @ionChange="changeVideoDevice">
           <ion-select-option v-for="video in videoDevices" :key="video.index" :value="video.index">
             {{ video.index }}: {{ video.text }}
           </ion-select-option>
@@ -43,7 +43,7 @@
       </ion-fab>
 
       <ion-fab vertical="bottom" horizontal="end" slot="fixed" class='settings'>
-        <ion-fab-button size="small" color="light" :disabled="this.videoDevices < 1" @click="changeVideoDevice">
+        <ion-fab-button size="small" color="light" :disabled="this.videoDevices < 1" @click="selectnextDevice">
           <ion-icon :icon="cameraReverseOutline"></ion-icon>
         </ion-fab-button>
         <ion-fab-button size="small" color="light">
@@ -93,6 +93,7 @@ export default defineComponent({
       chara: {} as HTMLImageElement,
       charaPos: { x: 0, y: 0 },
       charaUrl: 'https://4.bp.blogspot.com/-cD6qC3KnvzI/W6DTCD_LsII/AAAAAAABO4s/ObVOfI-_cTQPp7cyfPFiGdxr4cBU7jfjgCLcBGAs/s400/animal_stand_neko_white.png',
+      stream: {} as MediaStream,
       video: {} as HTMLVideoElement,
       canvas: {} as HTMLCanvasElement,
       offscreen: {} as HTMLCanvasElement,
@@ -133,21 +134,17 @@ export default defineComponent({
 
     if (this.videoDevices.length > 0) {
       this.selectedVideoDevice = 0;
-      this.onChange();
+      this.changeVideoDevice();
     }
   },
 
   methods: {
-    onChange() {
-      if ( this.selectedVideoDevice < this.videoDevices.length ) this.connectLocalCamera();
-    },
-    changeVideoDevice() {
-      if ( this.videoDevices.length > 1 ) {
-        this.selectedVideoDevice = (this.selectedVideoDevice + 1) % this.videoDevices.length;
+    async changeVideoDevice() {
+      if (this.video.srcObject ) {
+        // @ts-expect-error this.video.srcObject as MediaSource
+        this.video.srcObject.getTracks().forEach(track => track.stop());
       }
-      if ( this.selectedVideoDevice < this.videoDevices.length ) this.connectLocalCamera();
-    },
-    async connectLocalCamera() {
+      
       const constraints = {
         video: this.selectedVideoDevice < this.videoDevices.length
           ? { deviceId: { exact: this.videoDevices[this.selectedVideoDevice].deviceId } }
@@ -155,6 +152,12 @@ export default defineComponent({
       };
 
       this.video.srcObject = await navigator.mediaDevices.getUserMedia(constraints);
+    },
+    selectnextDevice() {
+      if ( this.videoDevices.length > 1 ) {
+        this.selectedVideoDevice = (this.selectedVideoDevice + 1) % this.videoDevices.length;
+        this.changeVideoDevice();
+      }
     },
     loadCharaImage() {
       this.chara = new Image();
